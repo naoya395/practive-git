@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>佐渡 観光・レンタサイクル・トレッキングマップ</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3yn5wZt1VjMZrQpQpKZ4YbJQ8J3zM=" crossorigin="" />
+  <style>
+    :root { --bg:#f6f7f8; --card:#fff; --text:#1b1f23; --muted:#667085; --border:#d0d5dd; --accent:#0b6e4f; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif; color:var(--text); background:var(--bg); }
+    header { padding:16px 18px 10px; background:var(--card); border-bottom:1px solid var(--border); }
+    h1 { margin:0 0 4px; font-size:20px; }
+    header p { margin:0; color:var(--muted); font-size:13px; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px; background:var(--card); border-bottom:1px solid var(--border); }
+    .controls button { border:1px solid var(--border); background:#fff; padding:9px 12px; border-radius:10px; cursor:pointer; font-size:14px; }
+    .controls button.active { background:#eaf5f0; border-color:var(--accent); font-weight:700; }
+    #map { height:68vh; min-height:430px; width:100%; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; padding:12px 14px 20px; }
+    .place { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; }
+    .place h2 { font-size:15px; margin:0 0 5px; }
+    .place p { margin:0 0 8px; color:var(--muted); font-size:13px; line-height:1.5; }
+    .place a { color:#065f46; font-size:13px; }
+    .tag { display:inline-block; font-size:11px; border-radius:999px; padding:3px 8px; margin-bottom:7px; background:#eef2f6; }
+    footer { padding:0 14px 20px; color:var(--muted); font-size:12px; line-height:1.5; }
+    .leaflet-popup-content { line-height:1.55; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>佐渡 観光・レンタサイクル・トレッキングマップ</h1>
+  <p>二ツ亀キャンプ場を拠点に、観光・自転車・トレッキング候補をまとめた共有用マップ</p>
+</header>
+<div class="controls" aria-label="地点フィルター">
+  <button class="active" data-filter="all">すべて</button>
+  <button data-filter="stay">🏕 宿泊</button>
+  <button data-filter="sight">📍 観光</button>
+  <button data-filter="bike">🚲 レンタサイクル</button>
+  <button data-filter="hike">🥾 トレッキング</button>
+</div>
+<div id="map" aria-label="佐渡島の観光マップ"></div>
+<div id="list" class="grid"></div>
+<footer>
+  地図: © OpenStreetMap contributors。トレッキングのピンはコースの起点・入口を示し、登山道の正確な軌跡ではありません。<br>
+  大佐渡石名天然杉遊歩道は2026年5月23日に一般開放。石名側林道は工事日の通行規制があるため、出発前に新潟県・さど観光ナビの最新情報を確認してください。
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const places = [
+  {name:'二ツ亀キャンプ場', cat:'stay', icon:'🏕', lat:38.32972, lon:138.48722, note:'今回の宿泊拠点。北部観光の起点。'},
+  {name:'大野亀', cat:'sight', icon:'🌊', lat:38.32169, lon:138.45849, note:'二ツ亀から近い北部の代表的景勝地。'},
+  {name:'大佐渡石名天然杉遊歩道', cat:'hike', icon:'🥾', lat:38.1870168, lon:138.4207875, note:'約650m、休憩込み約1時間、標高差約100m。遊歩道入口方面のピン。'},
+  {name:'ドンデン高原周回（起点：ドンデン高原ロッジ）', cat:'hike', icon:'🥾', lat:38.1383308, lon:138.3206325, note:'約3.5km、休憩込み約2.5時間、標高差約100m。尻立山・ドンデン池を巡る周回。'},
+  {name:'尖閣湾揚島遊園', cat:'sight', icon:'🌊', lat:38.09376, lon:138.24866, note:'断崖と海の景観。相川方面の日に組み込みやすい。'},
+  {name:'相川観光案内所', cat:'bike', icon:'🚲', lat:38.029996, lon:138.240359, note:'エコだっチャリ貸出拠点。金山・北沢周辺の観光に便利。'},
+  {name:'史跡 佐渡金山', cat:'sight', icon:'⛏', lat:38.04136, lon:138.25540, note:'坑道を見学できる佐渡の代表的観光地。'},
+  {name:'北沢浮遊選鉱場跡', cat:'sight', icon:'🏭', lat:38.03678, lon:138.24211, note:'金山とセットで回りやすい産業遺産。'},
+  {name:'南佐渡観光案内所（小木）', cat:'bike', icon:'🚲', lat:37.81430, lon:138.28250, note:'エコだっチャリ貸出拠点。位置は小木港周辺の概略。'},
+  {name:'竜王洞・琴浦洞窟', cat:'sight', icon:'🛶', lat:37.80628, lon:138.25339, note:'海側からカヤックやボートでアクセスする洞窟。'},
+  {name:'宿根木', cat:'sight', icon:'🏘', lat:37.80707, lon:138.24340, note:'北前船・船大工文化が残る歴史的町並み。'},
+  {name:'たらい舟・小木港周辺', cat:'sight', icon:'🛶', lat:37.81417, lon:138.27944, note:'たらい舟体験の候補エリア。'}
+];
+
+const map = L.map('map', {scrollWheelZoom:true}).setView([38.08,138.34], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19,
+  attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const groups = {stay:L.layerGroup(), sight:L.layerGroup(), bike:L.layerGroup(), hike:L.layerGroup()};
+Object.values(groups).forEach(g=>g.addTo(map));
+const markers=[];
+function googleUrl(p){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.lat+','+p.lon)}`; }
+places.forEach(p=>{
+  const marker=L.marker([p.lat,p.lon], {title:p.name});
+  marker.bindPopup(`<strong>${p.icon} ${p.name}</strong><br>${p.note}<br><a href="${googleUrl(p)}" target="_blank" rel="noopener">Google Mapsで開く ↗</a>`);
+  marker.addTo(groups[p.cat]);
+  markers.push({marker,p});
+});
+map.fitBounds(L.latLngBounds(places.map(p=>[p.lat,p.lon])).pad(0.08));
+const list=document.getElementById('list');
+function render(filter='all'){
+  Object.entries(groups).forEach(([cat,g])=>{
+    if(filter==='all'||filter===cat){ if(!map.hasLayer(g)) map.addLayer(g); }
+    else if(map.hasLayer(g)) map.removeLayer(g);
+  });
+  list.innerHTML='';
+  places.filter(p=>filter==='all'||p.cat===filter).forEach(p=>{
+    const el=document.createElement('article'); el.className='place';
+    el.innerHTML=`<span class="tag">${p.icon} ${p.cat==='stay'?'宿泊':p.cat==='bike'?'レンタサイクル':p.cat==='hike'?'トレッキング':'観光'}</span><h2>${p.name}</h2><p>${p.note}</p><a href="${googleUrl(p)}" target="_blank" rel="noopener">Google Mapsで開く ↗</a>`;
+    el.addEventListener('click',()=>{ map.setView([p.lat,p.lon],14); markers.find(x=>x.p===p).marker.openPopup(); });
+    list.appendChild(el);
+  });
+}
+render();
+document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); render(btn.dataset.filter);
+}));
+</script>
+</body>
+</html>
