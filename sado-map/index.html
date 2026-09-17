@@ -1,102 +1,71 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>佐渡 観光・レンタサイクル・トレッキングマップ</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3yn5wZt1VjMZrQpQpKZ4YbJQ8J3zM=" crossorigin="" />
-  <style>
-    :root { --bg:#f6f7f8; --card:#fff; --text:#1b1f23; --muted:#667085; --border:#d0d5dd; --accent:#0b6e4f; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif; color:var(--text); background:var(--bg); }
-    header { padding:16px 18px 10px; background:var(--card); border-bottom:1px solid var(--border); }
-    h1 { margin:0 0 4px; font-size:20px; }
-    header p { margin:0; color:var(--muted); font-size:13px; }
-    .controls { display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px; background:var(--card); border-bottom:1px solid var(--border); }
-    .controls button { border:1px solid var(--border); background:#fff; padding:9px 12px; border-radius:10px; cursor:pointer; font-size:14px; }
-    .controls button.active { background:#eaf5f0; border-color:var(--accent); font-weight:700; }
-    #map { height:68vh; min-height:430px; width:100%; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; padding:12px 14px 20px; }
-    .place { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; }
-    .place h2 { font-size:15px; margin:0 0 5px; }
-    .place p { margin:0 0 8px; color:var(--muted); font-size:13px; line-height:1.5; }
-    .place a { color:#065f46; font-size:13px; }
-    .tag { display:inline-block; font-size:11px; border-radius:999px; padding:3px 8px; margin-bottom:7px; background:#eef2f6; }
-    footer { padding:0 14px 20px; color:var(--muted); font-size:12px; line-height:1.5; }
-    .leaflet-popup-content { line-height:1.55; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>佐渡 観光・レンタサイクル・トレッキングマップ</title>
+<style>
+:root{--bg:#f4f6f3;--panel:#fff;--text:#18201c;--muted:#66736b;--line:#d7ded8;--sea:#dcecf2;--land:#e5eadb;--land2:#cbd7bc;--accent:#166534;--sight:#2563eb;--bike:#b45309;--hike:#15803d;--stay:#7c3aed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif}header{background:var(--panel);padding:16px 18px 12px;border-bottom:1px solid var(--line)}h1{font-size:20px;margin:0 0 4px}header p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)}button{font:inherit}.filter,.zoomBtn{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:10px;min-height:42px;padding:8px 12px;cursor:pointer}.filter.active{border-color:var(--accent);background:#edf7ef;font-weight:700}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;padding:12px;max-width:1180px;margin:auto}.mapWrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}.mapTop{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}.zoom{display:flex;gap:5px}.zoomBtn{min-width:42px;padding:5px 10px}.viewport{position:relative;overflow:hidden;background:var(--sea);height:620px;touch-action:none;cursor:grab}.viewport.dragging{cursor:grabbing}svg{display:block;width:100%;height:100%}.detail{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;align-self:start}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ef;color:#47554c;font-size:11px}.detail h2{font-size:18px;margin:10px 0 6px}.detail p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}.detail a{display:inline-flex;margin-top:14px;min-height:42px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:10px;color:#0b57d0;text-decoration:none;font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px;max-width:1180px;margin:0 auto;padding:0 12px 18px}.place{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;cursor:pointer;text-align:left;color:var(--text)}.place:hover,.place.selected{border-color:#7aa98a;background:#f3faf5}.place .title{font-weight:700;font-size:14px}.place .note{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}.marker{cursor:pointer;outline:none}.marker circle{stroke:white;stroke-width:3}.marker text{fill:white;font-size:12px;font-weight:800;text-anchor:middle;dominant-baseline:middle;pointer-events:none}.marker:focus circle,.marker.selected circle{stroke:#111827;stroke-width:4}.mapLabel{font-size:12px;fill:#44514a;font-weight:700;paint-order:stroke;stroke:#f8faf8;stroke-width:4px;stroke-linejoin:round}.mapSmall{font-size:10px;fill:#6d7a73;paint-order:stroke;stroke:#f8faf8;stroke-width:3px}.road{fill:none;stroke:#ffffff;stroke-width:5;opacity:.95}.road2{fill:none;stroke:#8c9992;stroke-width:1.4;stroke-dasharray:4 4}.gridline{stroke:#b9d1d9;stroke-width:1;opacity:.35}footer{max-width:1180px;margin:0 auto;padding:0 14px 22px;font-size:11px;color:var(--muted);line-height:1.6}@media(max-width:760px){.layout{grid-template-columns:1fr;padding:8px}.viewport{height:520px}.detail{order:2}.mapWrap{order:1}.grid{padding:0 8px 16px;grid-template-columns:1fr}.toolbar{padding:8px}.filter{padding:7px 10px}header{padding:13px 12px 10px}h1{font-size:18px}}
+</style>
 </head>
 <body>
-<header>
-  <h1>佐渡 観光・レンタサイクル・トレッキングマップ</h1>
-  <p>二ツ亀キャンプ場を拠点に、観光・自転車・トレッキング候補をまとめた共有用マップ</p>
-</header>
-<div class="controls" aria-label="地点フィルター">
-  <button class="active" data-filter="all">すべて</button>
-  <button data-filter="stay">🏕 宿泊</button>
-  <button data-filter="sight">📍 観光</button>
-  <button data-filter="bike">🚲 レンタサイクル</button>
-  <button data-filter="hike">🥾 トレッキング</button>
+<header><h1>佐渡 観光・レンタサイクル・トレッキングマップ</h1><p>二ツ亀キャンプ場を拠点にした候補。地図は表示欠けを避けるため外部タイルを使わない簡略地形図です。</p></header>
+<div class="toolbar" aria-label="地点フィルター">
+<button class="filter active" data-filter="all">すべて</button><button class="filter" data-filter="stay">🏕 宿泊</button><button class="filter" data-filter="sight">📍 観光</button><button class="filter" data-filter="bike">🚲 レンタサイクル</button><button class="filter" data-filter="hike">🥾 トレッキング</button>
 </div>
-<div id="map" aria-label="佐渡島の観光マップ"></div>
-<div id="list" class="grid"></div>
-<footer>
-  地図: © OpenStreetMap contributors。トレッキングのピンはコースの起点・入口を示し、登山道の正確な軌跡ではありません。<br>
-  大佐渡石名天然杉遊歩道は2026年5月23日に一般開放。石名側林道は工事日の通行規制があるため、出発前に新潟県・さど観光ナビの最新情報を確認してください。
-</footer>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<div class="layout">
+<section class="mapWrap"><div class="mapTop"><span>ドラッグで移動・ホイール/＋−で拡大縮小</span><div class="zoom"><button class="zoomBtn" id="minus" aria-label="縮小">−</button><button class="zoomBtn" id="reset">全体</button><button class="zoomBtn" id="plus" aria-label="拡大">＋</button></div></div><div class="viewport" id="viewport"><svg id="map" viewBox="0 0 800 720" role="img" aria-label="佐渡島の概略地形図と観光地点"><g id="world"></g></svg></div></section>
+<aside class="detail"><span class="badge" id="detailBadge">🏕 宿泊</span><h2 id="detailTitle">二ツ亀キャンプ場</h2><p id="detailNote">今回の宿泊拠点。北部観光の起点。</p><a id="detailLink" target="_blank" rel="noopener">Google Mapsで正確な位置を開く ↗</a></aside>
+</div>
+<div class="grid" id="list"></div>
+<footer>このページの島形・道路線は位置関係把握用の簡略図で、ナビゲーション用途ではありません。各ピンのリンクからGoogle Mapsの緯度経度を開けます。トレッキングのピンはコース起点・入口を示します。</footer>
 <script>
-const places = [
-  {name:'二ツ亀キャンプ場', cat:'stay', icon:'🏕', lat:38.32972, lon:138.48722, note:'今回の宿泊拠点。北部観光の起点。'},
-  {name:'大野亀', cat:'sight', icon:'🌊', lat:38.32169, lon:138.45849, note:'二ツ亀から近い北部の代表的景勝地。'},
-  {name:'大佐渡石名天然杉遊歩道', cat:'hike', icon:'🥾', lat:38.1870168, lon:138.4207875, note:'約650m、休憩込み約1時間、標高差約100m。遊歩道入口方面のピン。'},
-  {name:'ドンデン高原周回（起点：ドンデン高原ロッジ）', cat:'hike', icon:'🥾', lat:38.1383308, lon:138.3206325, note:'約3.5km、休憩込み約2.5時間、標高差約100m。尻立山・ドンデン池を巡る周回。'},
-  {name:'尖閣湾揚島遊園', cat:'sight', icon:'🌊', lat:38.09376, lon:138.24866, note:'断崖と海の景観。相川方面の日に組み込みやすい。'},
-  {name:'相川観光案内所', cat:'bike', icon:'🚲', lat:38.029996, lon:138.240359, note:'エコだっチャリ貸出拠点。金山・北沢周辺の観光に便利。'},
-  {name:'史跡 佐渡金山', cat:'sight', icon:'⛏', lat:38.04136, lon:138.25540, note:'坑道を見学できる佐渡の代表的観光地。'},
-  {name:'北沢浮遊選鉱場跡', cat:'sight', icon:'🏭', lat:38.03678, lon:138.24211, note:'金山とセットで回りやすい産業遺産。'},
-  {name:'南佐渡観光案内所（小木）', cat:'bike', icon:'🚲', lat:37.81430, lon:138.28250, note:'エコだっチャリ貸出拠点。位置は小木港周辺の概略。'},
-  {name:'竜王洞・琴浦洞窟', cat:'sight', icon:'🛶', lat:37.80628, lon:138.25339, note:'海側からカヤックやボートでアクセスする洞窟。'},
-  {name:'宿根木', cat:'sight', icon:'🏘', lat:37.80707, lon:138.24340, note:'北前船・船大工文化が残る歴史的町並み。'},
-  {name:'たらい舟・小木港周辺', cat:'sight', icon:'🛶', lat:37.81417, lon:138.27944, note:'たらい舟体験の候補エリア。'}
+const places=[
+ {id:1,name:'二ツ亀キャンプ場',cat:'stay',icon:'🏕',lat:38.32972,lon:138.48722,note:'今回の宿泊拠点。北部観光の起点。'},
+ {id:2,name:'大野亀',cat:'sight',icon:'🌊',lat:38.32169,lon:138.45849,note:'二ツ亀から近い北部の代表的景勝地。'},
+ {id:3,name:'大佐渡石名天然杉遊歩道',cat:'hike',icon:'🥾',lat:38.1870168,lon:138.4207875,note:'約650m、休憩込み約1時間。遊歩道入口方面のピン。'},
+ {id:4,name:'ドンデン高原周回',cat:'hike',icon:'🥾',lat:38.1383308,lon:138.3206325,note:'起点はドンデン高原ロッジ。約3.5km、休憩込み約2.5時間。'},
+ {id:5,name:'尖閣湾揚島遊園',cat:'sight',icon:'🌊',lat:38.09376,lon:138.24866,note:'断崖と海の景観。相川方面の日に組み込みやすい。'},
+ {id:6,name:'相川観光案内所',cat:'bike',icon:'🚲',lat:38.029996,lon:138.240359,note:'エコだっチャリ貸出拠点。金山・北沢周辺に便利。'},
+ {id:7,name:'史跡 佐渡金山',cat:'sight',icon:'⛏',lat:38.04136,lon:138.25540,note:'坑道を見学できる佐渡の代表的観光地。'},
+ {id:8,name:'北沢浮遊選鉱場跡',cat:'sight',icon:'🏭',lat:38.03678,lon:138.24211,note:'金山とセットで回りやすい産業遺産。'},
+ {id:9,name:'南佐渡観光案内所（小木）',cat:'bike',icon:'🚲',lat:37.81430,lon:138.28250,note:'エコだっチャリ貸出拠点。小木港周辺。'},
+ {id:10,name:'竜王洞・琴浦洞窟',cat:'sight',icon:'🛶',lat:37.80628,lon:138.25339,note:'海側からカヤックやボートでアクセスする洞窟。'},
+ {id:11,name:'宿根木',cat:'sight',icon:'🏘',lat:37.80707,lon:138.24340,note:'北前船・船大工文化が残る歴史的町並み。'},
+ {id:12,name:'たらい舟・小木港周辺',cat:'sight',icon:'🛶',lat:37.81417,lon:138.27944,note:'たらい舟体験の候補エリア。'}
 ];
-
-const map = L.map('map', {scrollWheelZoom:true}).setView([38.08,138.34], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom:19,
-  attribution:'&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-const groups = {stay:L.layerGroup(), sight:L.layerGroup(), bike:L.layerGroup(), hike:L.layerGroup()};
-Object.values(groups).forEach(g=>g.addTo(map));
-const markers=[];
-function googleUrl(p){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.lat+','+p.lon)}`; }
-places.forEach(p=>{
-  const marker=L.marker([p.lat,p.lon], {title:p.name});
-  marker.bindPopup(`<strong>${p.icon} ${p.name}</strong><br>${p.note}<br><a href="${googleUrl(p)}" target="_blank" rel="noopener">Google Mapsで開く ↗</a>`);
-  marker.addTo(groups[p.cat]);
-  markers.push({marker,p});
-});
-map.fitBounds(L.latLngBounds(places.map(p=>[p.lat,p.lon])).pad(0.08));
+const cats={stay:['🏕 宿泊','#7c3aed'],sight:['📍 観光','#2563eb'],bike:['🚲 レンタサイクル','#b45309'],hike:['🥾 トレッキング','#15803d']};
+const minLon=138.18,maxLon=138.62,minLat=37.76,maxLat=38.37;
+function xy(lon,lat){return [90+(lon-minLon)/(maxLon-minLon)*620,650-(lat-minLat)/(maxLat-minLat)*590]}
+const coast=[
+[138.489,38.348],[138.466,38.335],[138.445,38.305],[138.418,38.278],[138.389,38.253],[138.352,38.226],[138.318,38.196],[138.282,38.158],[138.252,38.119],[138.229,38.078],[138.218,38.040],[138.224,38.004],[138.242,37.976],[138.262,37.948],[138.252,37.911],[138.229,37.870],[138.206,37.826],[138.223,37.795],[138.270,37.785],[138.319,37.798],[138.365,37.817],[138.410,37.842],[138.457,37.875],[138.505,37.914],[138.548,37.958],[138.582,38.005],[138.598,38.046],[138.581,38.078],[138.548,38.095],[138.509,38.097],[138.478,38.112],[138.456,38.142],[138.449,38.181],[138.456,38.222],[138.469,38.267],[138.481,38.306]
+];
+const roads=[
+[[138.487,38.33],[138.42,38.25],[138.36,38.18],[138.31,38.12],[138.26,38.05],[138.25,37.98],[138.29,37.91],[138.31,37.82]],
+[[138.31,38.12],[138.38,38.08],[138.46,38.07],[138.54,38.05]],
+[[138.38,38.08],[138.43,37.99],[138.48,37.92],[138.32,37.82]]
+];
+const world=document.getElementById('world');
+function el(tag,attrs={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e}
+for(let i=0;i<7;i++){let y=70+i*90;world.appendChild(el('line',{x1:45,y1:y,x2:755,y2:y,class:'gridline'}));}
+for(let i=0;i<8;i++){let x=70+i*90;world.appendChild(el('line',{x1:x,y1:35,x2:x,y2:685,class:'gridline'}));}
+const poly=el('polygon',{points:coast.map(p=>xy(...p).join(',')).join(' '),fill:'var(--land)',stroke:'#7b8c7c','stroke-width':'3'});world.appendChild(poly);
+const ridge=el('path',{d:'M 520 100 C 470 170, 420 230, 350 310 S 290 420, 320 470',fill:'none',stroke:'var(--land2)','stroke-width':'42','stroke-linecap':'round',opacity:'.6'});world.appendChild(ridge);
+roads.forEach(r=>{const d=r.map((p,i)=>{const q=xy(...p);return (i?'L':'M')+' '+q[0]+' '+q[1]}).join(' ');world.appendChild(el('path',{d,class:'road'}));world.appendChild(el('path',{d,class:'road2'}));});
+const labels=[['北部',138.45,38.28],['相川',138.235,38.02],['国中',138.38,38.02],['小木',138.28,37.82],['両津',138.47,38.08]];
+labels.forEach(([t,lon,lat])=>{const [x,y]=xy(lon,lat),tx=el('text',{x,y,class:'mapLabel'});tx.textContent=t;world.appendChild(tx)});
+let filter='all',selected=places[0];
+function gmap(p){return `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lon}`}
+function select(p){selected=p;document.getElementById('detailBadge').textContent=cats[p.cat][0];document.getElementById('detailTitle').textContent=p.name;document.getElementById('detailNote').textContent=p.note;document.getElementById('detailLink').href=gmap(p);document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('selected',+m.dataset.id===p.id));document.querySelectorAll('.place').forEach(m=>m.classList.toggle('selected',+m.dataset.id===p.id));}
+const mg=el('g',{id:'markers'});world.appendChild(mg);
+places.forEach(p=>{const [x,y]=xy(p.lon,p.lat);const g=el('g',{class:'marker','data-id':p.id,tabindex:'0',role:'button','aria-label':p.name,transform:`translate(${x},${y})`});const c=el('circle',{r:12,fill:cats[p.cat][1]});const t=el('text',{x:0,y:.5});t.textContent=p.id;g.append(c,t);g.addEventListener('click',()=>select(p));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(p)}});mg.appendChild(g)});
 const list=document.getElementById('list');
-function render(filter='all'){
-  Object.entries(groups).forEach(([cat,g])=>{
-    if(filter==='all'||filter===cat){ if(!map.hasLayer(g)) map.addLayer(g); }
-    else if(map.hasLayer(g)) map.removeLayer(g);
-  });
-  list.innerHTML='';
-  places.filter(p=>filter==='all'||p.cat===filter).forEach(p=>{
-    const el=document.createElement('article'); el.className='place';
-    el.innerHTML=`<span class="tag">${p.icon} ${p.cat==='stay'?'宿泊':p.cat==='bike'?'レンタサイクル':p.cat==='hike'?'トレッキング':'観光'}</span><h2>${p.name}</h2><p>${p.note}</p><a href="${googleUrl(p)}" target="_blank" rel="noopener">Google Mapsで開く ↗</a>`;
-    el.addEventListener('click',()=>{ map.setView([p.lat,p.lon],14); markers.find(x=>x.p===p).marker.openPopup(); });
-    list.appendChild(el);
-  });
-}
-render();
-document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); render(btn.dataset.filter);
-}));
+function render(){list.innerHTML='';places.forEach(p=>{const show=filter==='all'||p.cat===filter;const marker=mg.querySelector(`[data-id="${p.id}"]`);marker.style.display=show?'':'none';if(!show)return;const b=document.createElement('button');b.className='place';b.dataset.id=p.id;b.innerHTML=`<div class="title">${p.id}. ${p.icon} ${p.name}</div><div class="note">${p.note}</div>`;b.addEventListener('click',()=>select(p));list.appendChild(b)});if(!(filter==='all'||selected.cat===filter)){select(places.find(p=>filter==='all'||p.cat===filter))}else select(selected)}
+document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x===b));render()}));
+let vb={x:0,y:0,w:800,h:720};const svg=document.getElementById('map');function apply(){svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`)}function zoom(f,cx=vb.x+vb.w/2,cy=vb.y+vb.h/2){const nw=Math.max(300,Math.min(800,vb.w*f));const nh=nw*.9;vb.x=cx-(cx-vb.x)*(nw/vb.w);vb.y=cy-(cy-vb.y)*(nh/vb.h);vb.w=nw;vb.h=nh;clamp();apply()}function clamp(){vb.x=Math.max(0,Math.min(800-vb.w,vb.x));vb.y=Math.max(0,Math.min(720-vb.h,vb.y))}
+document.getElementById('plus').addEventListener('click',()=>zoom(.8));document.getElementById('minus').addEventListener('click',()=>zoom(1.25));document.getElementById('reset').addEventListener('click',()=>{vb={x:0,y:0,w:800,h:720};apply()});
+const vp=document.getElementById('viewport');let drag=null;vp.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y};vp.setPointerCapture(e.pointerId);vp.classList.add('dragging')});vp.addEventListener('pointermove',e=>{if(!drag)return;const r=vp.getBoundingClientRect();vb.x=drag.vx-(e.clientX-drag.x)*vb.w/r.width;vb.y=drag.vy-(e.clientY-drag.y)*vb.h/r.height;clamp();apply()});function stop(){drag=null;vp.classList.remove('dragging')}vp.addEventListener('pointerup',stop);vp.addEventListener('pointercancel',stop);vp.addEventListener('wheel',e=>{e.preventDefault();const r=vp.getBoundingClientRect(),cx=vb.x+(e.clientX-r.left)/r.width*vb.w,cy=vb.y+(e.clientY-r.top)/r.height*vb.h;zoom(e.deltaY>0?1.12:.89,cx,cy)},{passive:false});
+render();select(places[0]);
 </script>
-</body>
-</html>
+</body></html>
